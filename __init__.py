@@ -142,7 +142,8 @@ class Pixelsmith:
                 #       This is supposed to be the denoise loop that performs a single step of guidance.
                 sub_time_index = (sigmas == sub_time.max()).nonzero().item()
                 sub_time_sigmas = sigmas[sub_time_index:sub_time_index+2]
-                guider.sample(noise.generate_noise({'samples': sub_latents}), sub_latents, sampler, sub_time_sigmas, denoise_mask=noise_mask, callback=callback, disable_pbar=disable_pbar, seed=noise.seed)
+                sub_latents = guider.sample(noise.generate_noise({'samples': sub_latents}), sub_latents, sampler, sub_time_sigmas, denoise_mask=noise_mask, callback=callback, disable_pbar=disable_pbar, seed=noise.seed)
+                sub_latents = sub_latents.to(comfy.model_management.intermediate_device())
 
                 smoothed_time_mask = self.create_gradient_border(time_mask, gradient_width=10)
                 full_replace_mask = smoothed_time_mask == 1
