@@ -20,7 +20,6 @@ class Pixelsmith:
                 "sampler": ("SAMPLER", ),
                 "sigmas": ("SIGMAS", ),
                 "latent_image": ("LATENT", ),
-                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "patch_size": ("INT", {"default": 128, "min": 1, "max": 512, "step": 64}),
             }
         }
@@ -55,13 +54,12 @@ class Pixelsmith:
         smoothed_mask = (mask + (1 - mask) * smoothed_distances * distance_mask.float()).clamp(0, 1)
         return smoothed_mask
 
-    def sample(self, noise: Noise_RandomNoise, guider: comfy.samplers.CFGGuider, sampler: comfy.samplers.Sampler, sigmas, latent_image, denoise, patch_size):
+    def sample(self, noise: Noise_RandomNoise, guider: comfy.samplers.CFGGuider, sampler: comfy.samplers.Sampler, sigmas, latent_image, patch_size):
         # Almost all code in this function is from here, with adapations to work with ComfyUI:
         # https://github.com/Thanos-DB/Pixelsmith/blob/f15d725d19a782ae340c7c1db6cd301550fcf6cf/pixelsmith_pipeline.py#L1715
 
-        # NOTE: The "Slider" parameter in the original paper is just a denoise parameter where the steps are fixed to 50 (diffusers default).
-        #       Ideally we would not need `denoise` passed in at all, but sigmas that are passed in do not contain such information.
-        slider = int(50 * denoise)
+        # NOTE: The "Slider" parameter in the original paper is just a denoise parameter where the steps are fixed to 50 (diffusers default step count).
+        slider = int((len(sigmas) - 1))
 
         latent = latent_image
         latent_image = latent["samples"]
